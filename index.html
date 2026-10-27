@@ -1,0 +1,499 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Paciente virtual · Demo</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600&family=Figtree:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#F3F7F6;--panel:#0F3B40;--pk:#E4F3F1;--ink:#13282B;--muted:#5B7174;--line:#C9D8D6;--field:#fff;--accent:#0E7C86;--aink:#fff;--err:#B3261E;--soft:#DDEFEC;--pulse:#6FE0D2;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0C1819;--panel:#071E21;--pk:#DDEFEC;--ink:#E3EFEE;--muted:#93AAAC;--line:#2A4143;--field:#132829;--accent:#38B6C0;--aink:#04191B;--err:#FF8A80;--soft:#16383A}}
+:root[data-theme="dark"]{--bg:#0C1819;--panel:#071E21;--pk:#DDEFEC;--ink:#E3EFEE;--muted:#93AAAC;--line:#2A4143;--field:#132829;--accent:#38B6C0;--aink:#04191B;--err:#FF8A80;--soft:#16383A}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*,*::before,*::after{box-sizing:border-box}
+body{margin:0;min-height:100vh;background:var(--bg);color:var(--ink);font:16px/1.5 'Figtree',system-ui,sans-serif}
+h1,h2,h3{font-family:'Fraunces',Georgia,serif;font-weight:600;margin:0}
+[hidden]{display:none!important}
+button{font:inherit;font-weight:600;cursor:pointer;border:0;border-radius:8px;padding:10px 16px}
+input[type=text],input[type=password]{width:100%;padding:12px 14px;font:inherit;color:var(--ink);background:var(--field);border:1px solid var(--line);border-radius:8px}
+input:focus-visible,button:focus-visible,summary:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+.primary{background:var(--accent);color:var(--aink)}
+.ghost{background:transparent;color:inherit;border:1px solid var(--line)}
+.small{padding:5px 10px;font-size:.82rem}
+.shell{display:grid;grid-template-columns:minmax(0,1.05fr) minmax(0,1fr);min-height:100vh}
+.side{background:var(--panel);color:var(--pk);padding:48px;display:flex;flex-direction:column;justify-content:space-between;gap:32px}
+.side h1{font-size:clamp(2rem,4vw,3.25rem);line-height:1.08;margin-bottom:14px}
+.side p{margin:0;max-width:34ch;opacity:.8}
+.ecg{width:100%;height:auto}
+.ecg path{fill:none;stroke:var(--pulse);stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:1400;stroke-dashoffset:1400;animation:draw 2.4s ease-out .2s forwards}
+@keyframes draw{to{stroke-dashoffset:0}}
+.main{display:flex;align-items:center;justify-content:center;padding:32px}
+.card{width:100%;max-width:380px}
+.card h2{font-size:1.75rem;margin-bottom:6px}
+.sub{margin:0 0 24px;color:var(--muted)}
+label{display:block;font-weight:600;font-size:.9rem;margin:0 0 6px}
+.card input{margin-bottom:18px}
+.err{color:var(--err);min-height:1.4em;margin:-6px 0 14px;font-size:.92rem}
+.card .primary{width:100%;padding:13px 16px}
+.hint{margin-top:22px;padding-top:16px;border-top:1px solid var(--line);color:var(--muted);font-size:.9rem}
+code{background:var(--field);border:1px solid var(--line);border-radius:5px;padding:1px 6px;font-size:.88rem}
+.bar{background:var(--panel);color:var(--pk);display:flex;align-items:center;gap:12px;padding:12px 24px;position:sticky;top:0;z-index:5}
+.bar strong{font-family:'Fraunces',Georgia,serif;font-size:1.15rem;margin-right:auto}
+.role{background:var(--accent);color:var(--aink);border-radius:999px;padding:2px 12px;font-size:.85rem;font-weight:600}
+.bar .ghost{border-color:#ffffff55}
+.wrap{max-width:1080px;margin:0 auto;padding:28px 24px 48px}
+.lead{color:var(--muted);max-width:62ch;margin:6px 0 20px}
+.pcase{border:1px solid var(--line);background:var(--field);border-radius:10px;padding:14px 18px;margin-bottom:22px}
+.pcase b{font-family:'Fraunces',Georgia,serif;font-size:1.1rem}
+.cnt{display:flex;align-items:center;gap:14px;margin-bottom:18px;flex-wrap:wrap}
+.cnt .ok{color:var(--muted);font-size:.9rem}
+.grp{margin-bottom:22px}
+.grp h3{font-size:1.1rem;display:flex;align-items:center;gap:10px;margin-bottom:8px;flex-wrap:wrap}
+.grp h3 span{margin-right:auto}
+.items{display:grid;grid-template-columns:repeat(auto-fill,minmax(290px,1fr));gap:8px}
+.it{display:flex;gap:10px;align-items:flex-start;border:1px solid var(--line);background:var(--field);border-radius:8px;padding:10px 12px;margin:0;font-weight:400;font-size:.95rem;cursor:pointer}
+.it input{margin:4px 0 0;width:18px;height:18px;accent-color:var(--accent);flex:none}
+.it b{display:block;font-weight:600}
+.it small{color:var(--muted);display:block;line-height:1.35}
+.it:has(input:checked){border-color:var(--accent);background:var(--soft)}
+.stu{display:grid;grid-template-columns:minmax(0,.9fr) minmax(0,1.2fr);gap:24px;align-items:start}
+.ficha{border:1px solid var(--line);background:var(--field);border-radius:10px;padding:16px 18px}
+.ficha h3{font-size:1.1rem;margin:14px 0 6px}
+.ficha h3:first-of-type{margin-top:8px}
+.row{padding:8px 0;border-top:1px solid var(--line)}
+.row span{display:block;color:var(--muted);font-size:.85rem}
+.row.new{animation:fl 1.8s ease-out}
+@keyframes fl{from{background:var(--soft)}to{background:transparent}}
+.left{margin:0;color:var(--muted);font-size:.9rem}
+.chat{display:flex;flex-direction:column;border:1px solid var(--line);background:var(--field);border-radius:10px;overflow:hidden}
+.log{height:min(56vh,520px);overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:10px}
+.m{max-width:86%;padding:9px 13px;border-radius:12px;line-height:1.45}
+.m small{display:block;font-weight:600;font-size:.78rem;opacity:.75}
+.m.p{background:var(--soft);align-self:flex-start;border-bottom-left-radius:3px}
+.m.n{background:var(--accent);color:var(--aink);align-self:flex-end;border-bottom-right-radius:3px}
+.send{display:flex;gap:8px;padding:12px;border-top:1px solid var(--line)}
+.send input{margin:0}
+.send button{flex:none}
+details{border-top:1px solid var(--line);padding:10px 12px}
+summary{cursor:pointer;font-weight:600;font-size:.92rem}
+.q{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
+.q button{background:transparent;color:var(--ink);border:1px solid var(--line);font-weight:400;font-size:.85rem;padding:5px 10px;text-align:left}
+.q button.done{opacity:.45;text-decoration:line-through}
+textarea{width:100%;padding:12px 14px;font:inherit;color:var(--ink);background:var(--field);border:1px solid var(--line);border-radius:8px;resize:vertical;margin:0}
+.opts{border:1px solid var(--line);background:var(--field);border-radius:10px;padding:14px 18px;margin-bottom:22px}
+.opts h3{font-size:1.05rem;margin-bottom:10px}
+.opts label{display:flex;gap:10px;align-items:flex-start;font-weight:400;margin:0 0 10px;cursor:pointer}
+.opts input{margin-top:4px;width:18px;height:18px;accent-color:var(--accent);flex:none}
+.opts small,.tag{display:block;color:var(--muted);font-size:.85rem}
+.gen{display:flex;gap:12px;margin-top:6px}.gen button{flex:1;padding:14px 16px}
+.vbar{display:flex;gap:6px 14px;align-items:center;flex-wrap:wrap;padding:8px 12px;border-top:1px solid var(--line);font-size:.88rem}
+.vbar label{display:flex;gap:6px;align-items:center;margin:0;font-weight:400}
+.vbar input{margin:0;accent-color:var(--accent)}
+.vbar select{font:inherit;font-size:.85rem;max-width:210px;padding:4px 6px;color:var(--ink);background:var(--field);border:1px solid var(--line);border-radius:6px}
+#mic{flex:none;padding:10px 14px;font-size:1.1rem;line-height:1}
+#mic.on{background:var(--err);color:#fff;border-color:transparent}
+@media (max-width:760px){.shell,.stu{grid-template-columns:1fr}.side{padding:28px 24px;gap:20px}.main{padding:28px 20px 40px;align-items:flex-start}.chat{order:-1}.bar{padding:10px 16px}.wrap{padding:20px 16px 40px}}
+@media (prefers-reduced-motion:reduce){.ecg path{animation:none;stroke-dashoffset:0}.row.new{animation:none}}
+</style>
+</head>
+<body>
+<div class="shell" id="v-login">
+  <aside class="side">
+    <div><h1>Paciente virtual</h1><p>Practica la entrevista clínica con pacientes simulados antes de enfrentar a uno real.</p></div>
+    <svg class="ecg" viewBox="0 0 600 120" aria-hidden="true"><path d="M0 70 H110 L128 70 L145 30 L165 108 L185 12 L205 70 H300 L318 70 L332 50 L346 70 H470 L488 70 L505 30 L525 108 L545 12 L565 70 H600"/></svg>
+  </aside>
+  <main class="main"><section class="card">
+    <h2>Iniciar sesión</h2><p class="sub">Ingresa con tu usuario para continuar.</p>
+    <form id="form" novalidate>
+      <label for="user">Usuario</label><input type="text" id="user" autocomplete="username" autocapitalize="none" spellcheck="false">
+      <label for="pass">Clave</label><input type="password" id="pass" autocomplete="current-password">
+      <div class="err" id="err" role="alert"></div>
+      <button class="primary" type="submit">Entrar</button>
+    </form>
+    <div class="hint">Demo: usuarios <code>administrador</code> o <code>alumno</code>, clave <code>1234</code>.</div>
+  </section></main>
+</div>
+
+<div id="v-app" hidden>
+  <header class="bar"><strong>Paciente virtual</strong><span class="role" id="who"></span><button class="ghost small" id="logout" type="button">Cerrar sesión</button></header>
+
+  <section class="wrap" id="v-admin" hidden>
+    <h2>Qué ve el alumno al comenzar</h2>
+    <p class="lead">Marca los datos que el alumno tendrá disponibles desde el inicio, como peso y talla, que un paciente virtual no puede entregar. Lo que dejes sin marcar, el alumno deberá descubrirlo con preguntas. Los cambios se guardan solos.</p>
+    <div class="pcase"><b>Caso: don Jorge Fuentes Araya</b><br><span class="sub" style="margin:0">Control nutricional del Programa de Salud Cardiovascular · hipertensión arterial y sobrepeso</span></div>
+    <div class="opts"><h3>Opciones de la consulta</h3>
+      <label><input type="checkbox" id="o-ideas"><span>Mostrar “Ideas de preguntas” al alumno<small>Si lo desmarcas, el alumno tendrá que pensar sus propias preguntas.</small></span></label>
+      <label><input type="checkbox" id="o-voice"><span>Activar conversación por voz<small>El alumno puede hablar con el micrófono y escuchar las respuestas de don Jorge. Funciona en Chrome y Edge.</small></span></label>
+      <label><input type="radio" name="sv" id="o-auto"><span>La ficha se completa sola<small>Lo que don Jorge responde se guarda en la ficha, pero solo datos del paciente. No guarda información personal ni familiar (hogar, ingresos, familia, vivienda).</small></span></label>
+      <label><input type="radio" name="sv" id="o-man"><span>El alumno anota a mano<small>La ficha solo muestra los datos iniciales y el alumno escribe sus propios apuntes.</small></span></label></div>
+    <div class="cnt"><button class="ghost small" id="reset" type="button">Restablecer valores iniciales</button><span class="ok" id="count" aria-live="polite"></span></div>
+    <div id="groups"></div>
+  </section>
+
+  <section class="wrap" id="v-gender" hidden>
+    <div class="card"><h2>Antes de comenzar</h2><p class="sub">¿Eres hombre o mujer? Así don Jorge sabrá cómo dirigirse a ti.</p>
+    <div class="gen" id="gen"><button class="primary" type="button" data-g2="m">Mujer</button><button class="primary" type="button" data-g2="h">Hombre</button></div></div>
+  </section>
+
+  <section class="wrap" id="v-student" hidden>
+    <h2>Consulta con don Jorge</h2>
+    <p class="lead">Tienes los datos que definió el administrador. Para conocer el resto, hazle preguntas al paciente. Puedes escribir con tus propias palabras: don Jorge responde saludos, conversación general y avisa cuando no sabe algo.</p>
+    <div class="stu">
+      <aside class="ficha" aria-label="Ficha del paciente"><p class="left" id="left"></p><div id="ficha"></div><div id="notesbox" hidden><h3>Mis apuntes</h3><textarea id="notes" rows="9" aria-label="Mis apuntes" placeholder="Anota aquí lo que don Jorge te vaya contando"></textarea></div></aside>
+      <div class="chat">
+        <div class="log" id="log" role="log" aria-live="polite"></div>
+        <div class="vbar" id="vbar" hidden><label id="contl"><input type="checkbox" id="cont"> Conversación continua</label><label><input type="checkbox" id="speak" checked> Escuchar a don Jorge</label><label>Voz <select id="vsel" aria-label="Voz de don Jorge"><option value="auto">Automática (masculina)</option></select></label><span class="left" id="vstat" aria-live="polite"></span></div>
+        <form class="send" id="ask" novalidate><input type="text" id="qtext" placeholder="Escribe lo que quieras decirle o preguntarle" aria-label="Pregunta al paciente" autocomplete="off"><button class="ghost" type="button" id="mic" aria-pressed="false" aria-label="Hablar con el micrófono" title="Hablar con el micrófono" hidden>🎤</button><button class="primary" type="submit">Preguntar</button></form>
+        <details id="ideasbox"><summary>Ideas de preguntas</summary><div class="q" id="ideas"></div></details>
+      </div>
+    </div>
+  </section>
+</div>
+
+<script>
+(function(){
+var $=function(i){return document.getElementById(i)};
+var esc=function(s){return String(s).replace(/[&<>"]/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]})};
+var GR=["Datos del control PSCV","Exámenes de hace 1 mes","Anamnesis (se obtiene conversando)"];
+var IT=[
+["edad",0,"Edad y sexo","52 años, masculino"],
+["peso",0,"Peso","84 kg"],
+["talla",0,"Talla","1,70 m"],
+["imc",0,"IMC","29,1 kg/m² (sobrepeso)"],
+["cintura",0,"Circunferencia de cintura","102 cm"],
+["pa",0,"Presión arterial","148/94 mmHg"],
+["hta",0,"Diagnóstico de HTA","Hace 3 años"],
+["rcv",0,"Riesgo cardiovascular","Moderado, según el equipo PSCV"],
+["glic",1,"Glicemia en ayunas","98 mg/dL"],
+["ct",1,"Colesterol total","208 mg/dL"],
+["ldl",1,"Colesterol LDL","132 mg/dL"],
+["hdl",1,"Colesterol HDL","39 mg/dL"],
+["tg",1,"Triglicéridos","168 mg/dL"],
+["renal",1,"Función renal y electrolitos","Creatinina 0,9 mg/dL, VFG sobre 90 mL/min, sodio 140 y potasio 4,1 mEq/L; orina completa y RAC normales"],
+["ocup",2,"Ocupación y horario","Guardia de seguridad en un supermercado, lunes a viernes de 8:00 a 18:00 y un sábado al mes"],
+["hogar",2,"Hogar e ingresos","Vive con su esposa (49) y sus hijos (22 y 17); ingreso familiar de unos $900.000"],
+["cocina",2,"Compras y cocina","Compra su esposa; ella cocina los fines de semana. Almuerza en el casino de la empresa"],
+["sint",2,"Síntomas","Cefalea vespertina ocasional; se cansa al subir escaleras"],
+["pat",2,"Otras patologías","Sin diabetes ni enfermedad cardíaca o renal; colesterol “medio alto” sin fármaco"],
+["cir",2,"Cirugías","Colecistectomía hace 8 años"],
+["farm",2,"Fármacos","Losartán 50 mg cada 12 h; paracetamol si le duele la cabeza"],
+["adh",2,"Adherencia","Olvida la dosis de la noche, sobre todo los fines de semana"],
+["phist",2,"Evolución del peso","Pesaba unos 75 kg hace 5 años; subió 2 kg en los últimos 6 meses"],
+["afam",2,"Antecedentes familiares","Padre con HTA, fallecido por infarto a los 63; madre con diabetes; hermano con HTA"],
+["alc",2,"Alcohol","Unas 3 latas de cerveza el sábado; a veces piscolas en cumpleaños"],
+["tab",2,"Tabaco","Exfumador, dejó hace unos 10 años"],
+["act",2,"Actividad física","Sedentario; camina unos 10 minutos de ida y otros de vuelta al paradero"],
+["sue",2,"Sueño y estrés","Duerme 6 horas, se acuesta tarde y ronca; estrés leve por trabajo y dinero"],
+["dig",2,"Digestión y dentadura","Acidez con frituras; deposiciones cada 2 o 3 días; le faltan dos muelas pero mastica bien"],
+["pref",2,"Gustos y alergias","Sin alergias. Le gustan el pan, la cazuela, los porotos y el pollo asado; no le gustan el pescado, el brócoli ni la betarraga"],
+["sal",2,"Uso de sal","Agrega sal en la mesa casi siempre; su esposa cocina con cubito"],
+["r24",2,"Recordatorio de 24 horas","Desayuno: té con azúcar y marraqueta con palta y queso. Media mañana: 2 sopaipillas. Almuerzo: arroz con pollo frito, ensalada y jugo con azúcar. Once: té y marraqueta con jamón y queso. Cena: tallarines con carne y bebida"],
+["agua",2,"Consumo de agua","Unos 2 vasos al día"],
+["frec",2,"Frecuencia de consumo","Pan a diario y arroz o fideos casi a diario; fruta 2–3 veces por semana; verduras 3; cecinas casi a diario; pescado 1 vez al mes; legumbres 1 por semana; sin leche, pero queso mantecoso casi a diario; jugo en polvo diario y bebida casi todas las noches"]
+];
+IT.push(
+["fesp",2,"Esposa","49 años; auxiliar de aseo en un colegio"],
+["fhij",2,"Hijos","22 años (estudia en un instituto) y 17 años"],
+["viv",2,"Vivienda","Tiene refrigerador, cocina a gas y agua potable"],
+["col",2,"Horario de colación","Almuerza a las 13:30 en el casino de la empresa; tiene media hora"],
+["aceite",2,"Aceite","Aceite vegetal: 1 litro por semana para los cuatro; su esposa fríe harto"],
+["azu",2,"Azúcar","2 cucharaditas por té; toma 2 o 3 tés al día"],
+["salb",2,"Sal en el hogar","Una bolsa de 1 kg les dura unas 3 semanas"],
+["chat",2,"Comida rápida y dulces","Sopaipillas o completo 2–3 veces por semana; pizza 1 vez al mes; galletas 2 veces por semana en la caseta"]);
+var DEF=["edad","peso","talla","imc","cintura","pa"];
+var G0=IT.filter(function(i){return i[1]===0}).map(function(i){return i[0]});
+var Q=[
+{q:"¿Cuántos años tiene?",k:["edad","anos","cuantos anos"],a:"Tengo 52 años.",u:["edad"]},
+{q:"¿Me muestra su tarjetón del programa?",k:["tarjeton","carnet","control con la enfermera","enfermeria"],a:"Sí, aquí lo tengo. Me lo anotaron en el control con la enfermera, hace dos semanas.",u:G0},
+{q:"¿Cuánto pesa y cuánto mide?",k:["pesa","peso","kilos","kilo","pesaje","masa corporal","mide","talla","estatura","altura","imc"],a:"Pesé 84 kilos, y mido 1,70.",u:["peso","talla","imc"]},
+{q:"¿Le midieron la cintura?",k:["cintura","guata","panza","circunferencia"],a:"Sí, me dijeron 102.",u:["cintura"]},
+{q:"¿Recuerda cuánto le salió la presión?",k:["presion arterial","tension","le salio","cuanto salio","presion"],a:"148 con 94, creo.",u:["pa"]},
+{q:"¿Puedo revisar sus exámenes recientes?",k:["examen","laboratorio","resultado","glicemia","perfil lipidico","sangre"],a:"Sí, traje los del mes pasado. Me dijeron que el azúcar y los riñones andaban bien, pero el colesterol no tanto.",u:["glic","ct","ldl","hdl","tg","renal"]},
+{q:"¿A qué se dedica y cuáles son sus horarios?",k:["dedica","trabaja","turno","jornada","oficio","trabajo","horario","ocupacion","profesion","pega"],a:"Soy guardia de seguridad en un supermercado. Trabajo de lunes a viernes de 8 a 6 de la tarde, y un sábado al mes. Paso casi todo el tiempo parado o sentado en la caseta.",u:["ocup"]},
+{q:"¿Con quién vive y quién aporta ingresos?",k:["vive","casado","pareja","con quien","hogar","hijos","esposa","senora","ingreso","plata","sueldo","gana","ganan","salario"],a:"Vivo con mi señora, que tiene 49, y mis dos hijos, de 22 y 17. Trabajamos ella y yo; entre los dos ganamos como 900 mil pesos. Alcanza, pero justo.",u:["hogar"]},
+{q:"¿Quién hace las compras y cocina en la casa?",k:["cocina","quien prepara","compra","feria","supermercado","cocinar"],a:"Las compras las hace mi señora, en la feria y en el súper donde trabajo. Ella cocina los fines de semana y deja comida hecha. En la semana almuerzo en el casino.",u:["cocina"]},
+{q:"¿Cómo se ha sentido últimamente? ¿Algún malestar?",k:["marea","sentido","molestia","cansancio","fatiga","falta de aire","malestar","dolor","mareo","cabeza","sintoma","cansa"],a:"En general bien. A veces me duele la cabeza en la tarde, sobre todo cuando ando estresado en la pega. Y me canso cuando subo escaleras.",u:["sint"]},
+{q:"¿Desde cuándo es hipertenso?",k:["hipertens","desde cuando","hace cuanto","diagnosticaron","presion alta"],a:"Hace como tres años. Me la tomaron en un operativo en el supermercado y salí con 160. Después vine al consultorio y me dejaron en el programa.",u:["hta"]},
+{q:"¿Tiene otras enfermedades? ¿Diabetes, corazón, riñones?",k:["enfermedad","diabetes","corazon","rinon","patologia","colesterol"],a:"No, solo la presión. El doctor me dijo que el colesterol estaba “medio alto”, pero no me dio remedio.",u:["pat"]},
+{q:"¿Lo han operado alguna vez?",k:["opera","cirugia","vesicula"],a:"De la vesícula, hace como ocho años.",u:["cir"]},
+{q:"¿Qué medicamentos toma?",k:["medicamento","tratamiento","dosis","remedio","pastilla","losartan","farmaco","vitamina","hierba"],a:"Losartán de 50, uno en la mañana y otro en la noche. Y paracetamol cuando me duele la cabeza, no más.",u:["farm"]},
+{q:"¿Se le olvida tomarlo a veces?",k:["olvida","olvido","salta","adherencia","acuerda"],a:"La de la noche sí, se me pasa. Y los fines de semana, cuando me acuesto tarde, a veces no me la tomo.",u:["adh"]},
+{q:"¿Ha cambiado su peso en el último tiempo?",k:["cuanto pesaba","pesaba antes","hace anos","bajado de peso","subido de peso","cambiado","subido","bajado","evolucion"],a:"Sí. Hace unos cinco años pesaba como 75. Subí harto desde que entré a este trabajo, porque paso mucho tiempo quieto y como a deshora. Como dos kilos más en los últimos seis meses.",u:["phist"]},
+{q:"¿Alguien en su familia tiene presión alta, diabetes o infartos?",k:["antecedente","en su familia","en la familia","familiar","hereditari","infarto","derrame"],a:"Mi papá era hipertenso y murió de un infarto a los 63. Mi mamá tiene diabetes y vive. Un hermano mayor también es hipertenso.",u:["afam"]},
+{q:"¿Consume alcohol?",k:["alcohol","cerveza","trago","piscola"],a:"Los fines de semana. Unas tres latas de cerveza el sábado, cuando vemos el fútbol. A veces un par de piscolas en un cumpleaños.",u:["alc"]},
+{q:"¿Fuma o ha fumado?",k:["fuma","fumado","cigarro","tabaco"],a:"Fumé de joven, pero lo dejé hace como 10 años.",u:["tab"]},
+{q:"¿Hace actividad física o deporte?",k:["actividad fisica","gimnasio","caminata","se mueve","deporte","ejercicio","camina","sedentari"],a:"No, nada. Camino unos diez minutos de la casa al paradero y de vuelta. Llego muy cansado y me tiro al sillón.",u:["act"]},
+{q:"¿Cómo duerme? ¿Se siente estresado?",k:["duerme","descansa","insomnio","desvela","dormir","sueno","ronca","estres"],a:"Unas seis horas. Me acuesto tarde viendo tele y ronco harto, dice mi señora. Estresado algo, por el trabajo y la plata, pero nada grave.",u:["sue"]},
+{q:"¿Cómo anda su digestión? ¿Y sus dientes?",k:["digestion","acidez","estrenim","bano","hinchaz","diarrea","dientes","masticar","muelas"],a:"Acidez a veces, cuando como fritos. Voy al baño cada dos o tres días. Me faltan dos muelas, pero mastico bien.",u:["dig"]},
+{q:"¿Qué alimentos le gustan y cuáles no? ¿Tiene alergias?",k:["que le gusta comer","le gusta comer","le gustan","no le gusta","favorito","alerg","prefer","disgusta","gustos","come de todo"],a:"No soy alérgico, como de todo. Me gusta el pan, la cazuela, los porotos con riendas, el pollo asado y el asado de los domingos. El pescado no mucho, por las espinas, ni el brócoli ni la betarraga.",u:["pref"]},
+{q:"¿Le echa sal a la comida? ¿Usan caldos en cubo?",k:["sal","salero","cubito","caldo","sodio"],a:"Sí, casi siempre; el salero está en la mesa. Y en el casino la comida es sabrosa, ¿me entiende? Mi señora le echa cubito a la sopa y a los tallarines.",u:["sal"]},
+{q:"Cuénteme qué comió ayer, desde que se levantó.",k:["almuerza","desayuna","que come","come normalmente","habitualmente","ayer","recordatorio","desayuno","almuerzo","once","cena","comio","24 horas"],a:"Ayer fue un día normal. Desayuné té con azúcar y una marraqueta con palta y queso. A media mañana, dos sopaipillas. Almorcé en el casino arroz con pollo frito, ensalada y jugo en polvo. En la once, té y marraqueta con jamón y queso. Y a las nueve y media, tallarines con carne y un vaso de bebida.",u:["r24"]},
+{q:"¿Cuánta agua toma al día?",k:["agua","liquido","hidrata"],a:"Poca. Como dos vasos, cuando hace calor.",u:["agua"]},
+{q:"¿Cada cuánto come frutas, verduras, pescado y legumbres?",k:["frecuencia","cada cuanto","fruta","verdura","pescado","legumbre","lacteo","leche","bebida","jugo","gaseosa","marraqueta","pan","arroz","fideos","papas","carnes","pollo","cecinas","ensalada"],a:"Pan todos los días, unas dos marraquetas, y arroz o fideos casi todos los días. Frutas dos o tres veces a la semana, verduras como tres. Cecinas casi a diario. Pescado casi nunca, legumbres una vez por semana. Leche no tomo, pero queso mantecoso casi todos los días. Jugo en polvo todos los días y bebida casi todas las noches.",u:["frec"]},
+{q:"¿Su casa tiene refrigerador, cocina y agua potable?",k:["refrigerador","refri","agua potable","vivienda","servicios basicos","casa tiene","cocina a gas"],a:"Sí, todo eso tenemos.",u:["viv"]},
+{q:"¿Tiene horario fijo de colación?",k:["colacion","hora de almuerzo","a que hora almuerza","casino","tiempo para almorzar"],a:"Almuerzo a la una y media en el casino de la empresa. Tengo media hora.",u:["col"]},
+{q:"¿Qué aceite usan y cuánto?",k:["aceite","frie","fritura","freir"],a:"Aceite vegetal, una botella de litro por semana para los cuatro. Mi señora fríe harto.",u:["aceite"]},
+{q:"¿Usa azúcar o endulzante?",k:["azucar","endulzante","edulcorante","cucharadita"],a:"Azúcar, dos cucharaditas en cada té. Tomo dos tés al día, a veces tres.",u:["azu"]},
+{q:"¿Cuánto les dura una bolsa de sal?",k:["bolsa de sal","kilo de sal","cuanto dura","cuanto les dura","dura la sal"],a:"Como tres semanas. Y le echo sal en la mesa.",u:["salb"]},
+{q:"¿Come comida rápida o dulces?",k:["comida rapida","completo","sopaipilla","pizza","galleta","chocolate","snack","dulce","papas fritas"],a:"Sopaipillas o un completo dos o tres veces a la semana. Pizza, una vez al mes. Y galletas en la caseta, un paquete chico dos veces por semana.",u:["chat"]},
+{q:"¿A qué hora se levanta?",k:["se levanta","despierta","madruga"],a:"A las seis y media.",u:[]},
+{q:"¿Cuántas veces al día come?",k:["veces al dia come","cuantas comidas","tiempos de comida","comidas al dia"],a:"Desayuno, algo a media mañana, el almuerzo y la once. A veces una cena tarde, cuando queda comida.",u:[]},
+{q:"¿Le preocupa su peso?",k:["le preocupa","preocupa","piensa de su peso","como se ve"],a:["Sí, la panza no me deja verme los pies.","Me preocupa un poco, sí. La panza no me deja verme los pies."],u:[]},
+{q:"¿Qué le costaría más cambiar?",k:["le costaria","le costara","le cuesta","dificil","va a costar","obstaculo"],a:["Lo que más me va a costar es el pan.","Los fines de semana, con el asado."],u:[]},
+{h:1,g:1,k:["futbol","hobby","pasatiempo","tiempo libre"],a:["Me gusta ver el fútbol los sábados con la familia.","Veo harto fútbol, sobre todo el sábado."],u:[]},
+{h:1,g:1,k:["tome asiento","pase","sientese","tome siento"],a:["Gracias, con permiso.","Gracias, permiso."],u:[]},
+{h:1,g:1,k:["comodo","comoda"],a:["Sí, estoy cómodo, gracias.","Sí, todo bien, gracias."],u:[]},
+{h:1,k:["le voy a explicar","le explico","le indico","le recomiendo","le sugiero","le voy a dar","le doy una pauta","le propongo"],a:["Ya, entiendo, {t}.","Ah, ya. Voy a intentarlo.","Sí, claro. ¿Y eso cómo lo hago en la práctica?"],u:[]},
+{q:"¿Qué le han dicho de su salud?",k:["que le han dicho","que le dijo el doctor","que le dijeron","que le dijo el medico"],a:"El doctor me dijo que tengo la presión alta y que el colesterol estaba “medio alto”.",u:["pat"]},
+{q:"¿Cuál es su diagnóstico?",k:["cual es su diagnostico","que diagnostico tiene","que le diagnosticaron","de que lo diagnosticaron"],a:"Tengo la presión alta, hace como tres años. Y estoy pasado de peso, me dijeron.",u:["hta"]},
+{h:1,g:1,k:["dispuesto","motivado","ganas de cambiar","comprometer","intentar"],a:["Sí, claro, voy a intentarlo.","Sí, {t}, lo voy a hacer lo mejor que pueda."],u:[]},
+{h:1,g:1,k:["hola","buenas","buenos","buen dia","saludos"],a:function(t){var x=norm(t);return x.indexOf("buenos dias")>-1?pick(["Buenos días, {t}.","Buenos días, ¿cómo está?"]):x.indexOf("buenas tardes")>-1?pick(["Buenas tardes, {t}.","Buenas tardes, ¿cómo le va?"]):x.indexOf("buenas noches")>-1?"Buenas noches.":pick(["Hola, {t}.","Hola, buenas tardes."])},u:[]},
+{h:1,g:1,k:["como esta","como se encuentra","como amanecio","como le va","como se siente","como lo pasa","como ha estado","como ha pasado","que tal esta","que tal le","que tal todo"],a:["Bien, gracias, {t}. Un poco cansado, pero bien.","Aquí andamos, bien. ¿Y usted?","Más o menos, la verdad. Con lo de la presión y el peso ando medio preocupado, pero bien.","Bien, bien, gracias por preguntar."],u:[]},
+{h:1,g:1,k:["me llamo","mi nombre","soy la","soy el","nutricionista","mucho gusto","un gusto"],a:["Mucho gusto, {t}.","El gusto es mío. Dígame Jorge no más.","Mucho gusto. Dígame Jorge no más, sin el don."],u:[]},
+{h:1,g:1,k:["prefiere que lo llame","como lo llamo","como le digo","como quiere que","llame"],a:["Dígame Jorge no más.","Jorge no más, {t}. Con eso está bien."],u:[]},
+{h:1,g:1,k:["acompan","viene solo","vino solo","viene con"],a:["Vengo solo. Mi señora quería venir, pero estaba trabajando.","Solo, {t}. Mi señora no pudo porque estaba trabajando."],u:[]},
+{h:1,g:1,k:["motivo","por que viene","que lo trae","a que viene","por que esta aqui","lo trae por"],a:["La enfermera me dijo que tenía que venir sí o sí, porque tengo la presión alta y estoy pasado de peso.","Vengo al control del programa del corazón, por la presión y por el peso."],u:[]},
+{h:1,g:1,k:["me entiende","le parece","esta de acuerdo","queda claro","comprende","entendio","de acuerdo"],a:["Sí, claro, le entiendo.","Sí, me parece bien.","Sí, entendido, {t}."],u:[]},
+{h:1,g:1,k:["confidencial","privado","reservado"],a:["Ah, qué bueno saberlo. Sí, claro, no hay problema.","Perfecto, así converso más tranquilo."],u:[]},
+{h:1,g:1,k:["varias preguntas","unas preguntas","algunas preguntas","30 minutos","treinta minutos","vamos a comenzar","vamos a empezar","comencemos","empecemos","comenzamos","empezamos","comenzar con las preguntas","empezar con las preguntas","hacerle preguntas","realizar su diagnostico","hacer su diagnostico"],a:["Sí, claro, adelante, pregunte no más.","Perfecto, pregunte con confianza."],u:[]},
+{h:1,g:1,k:["gracias","muy amable"],a:["De nada, {t}.","No, gracias a usted por atenderme.","Gracias a usted."],u:[]},
+{h:1,g:1,k:["chao","adios","hasta luego","hasta pronto","nos vemos","que le vaya bien"],a:["Muchas gracias, {t}. Hasta luego.","Gracias, hasta luego. Que le vaya bien."],u:[]},
+{h:1,g:1,k:["duda","algo que quiera","quiere agregar","algo mas","alguna otra cosa","quiere contarme"],a:["Por ahora no, pero si me acuerdo de algo le cuento.","Nada más por ahora, {t}.","Mmm, no se me ocurre nada más por ahora."],u:[]},
+{h:1,g:1,k:["alimentacion","su dieta","comida","como come","que come"],a:["Como de todo, {t}. ¿Qué le gustaría saber en particular?","Bueno, me gusta comer, no le voy a mentir. ¿Quiere que le cuente lo que comí ayer?"],u:[]},
+{h:1,g:1,k:["cuenteme","hableme","conversemos"],a:["¿Qué le gustaría saber, {t}? Pregunte no más.","Dígame por dónde quiere partir y yo le cuento."],u:[]}
+];
+var NOPE=["Mmm, no sabría decirle eso, {t}.","No me acuerdo bien de eso, la verdad. ¿Me pregunta otra cosa?","No le entendí bien, {t}. ¿Me lo puede preguntar de otra forma?","Eso no se lo sabría decir. ¿Quiere que le cuente de otra cosa?"];
+var norm=function(s){return s.normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase()};
+
+/* configuración compartida (se guarda en este navegador) */
+var cfg=DEF.slice();
+try{var s=localStorage.getItem("pv_visible");if(s){var p=JSON.parse(s);if(Array.isArray(p))cfg=p}}catch(e){}
+function save(){try{localStorage.setItem("pv_visible",JSON.stringify(cfg))}catch(e){}}
+var opts={ideas:true,auto:true,voice:true},treat="señorita";
+try{var o=JSON.parse(localStorage.getItem("pv_opts")||"null");if(o){opts.ideas=o.ideas!==false;opts.auto=o.auto!==false;opts.voice=o.voice!==false}}catch(e){}
+function saveOpts(){try{localStorage.setItem("pv_opts",JSON.stringify(opts))}catch(e){}}
+var PERS=["hogar","cocina","afam","fesp","fhij","viv"];
+
+/* login */
+var USERS={administrador:"Administrador",alumno:"Alumno"};
+$("form").addEventListener("submit",function(e){
+  e.preventDefault();
+  var u=$("user").value.trim().toLowerCase();
+  if(!Object.prototype.hasOwnProperty.call(USERS,u)||$("pass").value!=="1234"){
+    $("err").textContent="Usuario o clave incorrectos. Revisa los datos e inténtalo de nuevo.";
+    $("pass").value="";$("pass").focus();return;
+  }
+  $("err").textContent="";
+  $("v-login").hidden=true;$("v-app").hidden=false;$("who").textContent=USERS[u];
+  window.scrollTo(0,0);
+  if(u==="administrador"){$("v-admin").hidden=false;$("v-student").hidden=true;initAdmin()}
+  else{$("v-admin").hidden=true;$("v-student").hidden=true;$("v-gender").hidden=false}
+});
+$("logout").addEventListener("click",function(){
+  if(window.speechSynthesis)speechSynthesis.cancel();conv=false;if(rec&&listening){abortSend=true;rec.abort()}$("form").reset();$("v-app").hidden=true;$("v-admin").hidden=true;$("v-student").hidden=true;$("v-gender").hidden=true;$("v-login").hidden=false;$("user").focus();
+});
+
+/* administrador */
+function count(msg){$("count").textContent=cfg.length+" de "+IT.length+" datos visibles para el alumno"+(msg?" · "+msg:"")}
+function initAdmin(){
+  var h="";
+  GR.forEach(function(g,gi){
+    h+='<div class="grp"><h3><span>'+esc(g)+'</span><button class="ghost small" type="button" data-g="'+gi+'" data-on="1">Marcar todo</button><button class="ghost small" type="button" data-g="'+gi+'" data-on="0">Quitar todo</button></h3><div class="items">';
+    IT.forEach(function(i){if(i[1]!==gi)return;
+      h+='<label class="it"><input type="checkbox" data-id="'+i[0]+'"'+(cfg.indexOf(i[0])>-1?" checked":"")+'><span><b>'+esc(i[2])+'</b><small>'+esc(i[3])+'</small>'+(PERS.indexOf(i[0])>-1?'<small class="tag">Personal o familiar: no se guarda solo en la ficha</small>':'')+'</span></label>'});
+    h+='</div></div>';
+  });
+  $("groups").innerHTML=h;count("");initOpts();
+}
+function setCfg(ids,on){
+  ids.forEach(function(id){var k=cfg.indexOf(id);if(on&&k<0)cfg.push(id);if(!on&&k>-1)cfg.splice(k,1)});
+  save();
+  $("groups").querySelectorAll("input[data-id]").forEach(function(c){c.checked=cfg.indexOf(c.getAttribute("data-id"))>-1});
+  count("guardado");
+}
+$("groups").addEventListener("change",function(e){var id=e.target.getAttribute("data-id");if(id)setCfg([id],e.target.checked)});
+$("groups").addEventListener("click",function(e){
+  var g=e.target.getAttribute("data-g");if(g===null)return;
+  setCfg(IT.filter(function(i){return i[1]===+g}).map(function(i){return i[0]}),e.target.getAttribute("data-on")==="1");
+});
+function initOpts(){$("o-voice").checked=opts.voice;$("o-ideas").checked=opts.ideas;$("o-auto").checked=opts.auto;$("o-man").checked=!opts.auto}
+$("o-voice").addEventListener("change",function(){opts.voice=this.checked;saveOpts();count("guardado")});
+$("o-ideas").addEventListener("change",function(){opts.ideas=this.checked;saveOpts();count("guardado")});
+["o-auto","o-man"].forEach(function(id){$(id).addEventListener("change",function(){opts.auto=$("o-auto").checked;saveOpts();count("guardado")})});
+$("reset").addEventListener("click",function(){cfg=DEF.slice();save();initAdmin();count("valores iniciales restaurados")});
+
+/* alumno */
+var open=[],asked=[];
+function drawFicha(fresh){
+  var h="";
+  GR.forEach(function(g,gi){
+    var rows=IT.filter(function(i){return i[1]===gi&&open.indexOf(i[0])>-1});if(!rows.length)return;
+    h+="<h3>"+esc(g)+"</h3>";
+    rows.forEach(function(i){h+='<div class="row'+(fresh&&fresh.indexOf(i[0])>-1?" new":"")+'"><span>'+esc(i[2])+"</span>"+esc(i[3])+"</div>"});
+  });
+  $("ficha").innerHTML=h||"<p class=\"left\">Aún no tienes datos del paciente.</p>";
+  var n=IT.filter(function(i){return PERS.indexOf(i[0])<0&&open.indexOf(i[0])<0}).length;
+  $("left").textContent=!opts.auto?"Anota en tus apuntes lo que te cuente el paciente.":n>0?"Quedan "+n+" datos del paciente por descubrir preguntando.":"Ya descubriste todos los datos del paciente.";
+}
+function say(who,t){
+  var d=document.createElement("div");d.className="m "+who;
+  d.innerHTML="<small>"+(who==="n"?"Tú":"Don Jorge")+"</small>"+esc(t);
+  $("log").appendChild(d);$("log").scrollTop=$("log").scrollHeight;
+}
+function initStudent(){
+  open=cfg.slice();asked=[];$("log").innerHTML="";$("qtext").value="";
+  var hi="Buenas tardes. La enfermera me dijo que tenía que venir por la presión y por estar pasado de peso.";say("p",hi);speak(hi);
+  var h="";Q.forEach(function(q,i){if(!q.h)h+='<button type="button" data-q="'+i+'">'+esc(q.q)+"</button>"});
+  $("ideas").innerHTML=h;$("ideasbox").hidden=!opts.ideas;$("ideasbox").open=false;$("notesbox").hidden=opts.auto;$("notes").value="";$("vbar").hidden=!opts.voice;$("contl").hidden=!SR;$("cont").checked=false;conv=false;$("mic").hidden=!opts.voice||!SR;$("speak").parentNode.hidden=!window.speechSynthesis;$("vsel").parentNode.hidden=!window.speechSynthesis;vstat(opts.voice&&!SR?"Este navegador no reconoce voz: escribe tus preguntas (Chrome o Edge sí pueden).":"");drawFicha();
+}
+function pick(a,t){if(typeof a==="function")return a(t);if(!Array.isArray(a))return a;var c;do{c=a[Math.floor(Math.random()*a.length)]}while(a.length>1&&c===a.l);a.l=c;return c}
+function score(q,x,tk){var s=0;q.k.forEach(function(k){k=norm(k);var two=k.indexOf(" ")>-1;if(two?x.indexOf(k)>-1:(k.length<=3?tk.indexOf(k)>-1:tk.some(function(w){return w.indexOf(k)===0})))s+=two?2:1});return s*(q.g?.5:1)}
+function bestOf(seg){var x=norm(seg),tk=x.split(/[^a-z0-9]+/),b=-1,sc=0;Q.forEach(function(q,i){var s=score(q,x,tk);if(s>sc){sc=s;b=i}});return b}
+/* preguntas sobre otras personas: se responden con lo que el caso dice de ellas */
+var FAM=[
+{w:/\b(esposa|senora|conyuge|pareja)\b|\bsu mujer\b/,r:[
+[["trabaja","trabajo","dedica","ocupacion","profesion","oficio","pega","que hace"],["Mi señora es auxiliar de aseo en un colegio.","Trabaja de auxiliar de aseo en un colegio.","Mi señora hace el aseo en un colegio, es auxiliar."],["fesp"]],
+[["edad","anos"],"Mi señora tiene 49.",["fesp"]],
+[["cocina","cocinar","prepara","compra","feria"],"Mi señora hace las compras en la feria los domingos y en el supermercado donde trabajo. Cocina los fines de semana y deja comida hecha.",["cocina"]],
+[["vive","viven","casados"],"Sí, vivimos juntos, con mis dos hijos.",["hogar"]],
+[["gana","ingreso","sueldo","plata"],"Entre los dos ganamos como 900 mil pesos. Alcanza, pero justo.",["hogar"]],
+[["cubito","caldo","sal"],"Mi señora le echa cubito a la sopa y a los tallarines.",["sal"]],
+[["aceite","frie","fritura"],"Mi señora fríe harto; gastamos como un litro de aceite por semana para los cuatro.",["aceite"]],
+[["ronca","ronquido","duerme","sueno"],"Ella dice que yo ronco harto y que me acuesto tarde viendo tele.",["sue"]],
+[["proximo control","traiga","traer","venga","invitar"],"Sí, le voy a decir que venga conmigo.",[]],
+[["viene","vino","acompana","venir","control"],["Quería venir, pero estaba trabajando.","Ella quería acompañarme, pero justo estaba trabajando."],[]],
+[["como esta","como se encuentra","como anda","como se siente"],["Ella está bien, gracias por preguntar.","Mi señora anda bien, gracias."],[]]
+],d:["Mmm, eso de mi señora no se lo sabría decir.","No sabría decirle eso, {t}."]},
+{w:/\b(hijo|hijos|hija|hijas)\b/,r:[
+[["cuantos","tiene","tienen","edad","anos"],"Sí, tengo dos hijos, de 22 y 17.",["fhij"]],
+[["hijo menor","el menor","menor"],"El menor tiene 17 años.",["fhij"]],
+[["estudia","estudian","colegio","instituto","universidad","liceo","carrera"],["El mayor estudia en un instituto.","Mi hijo mayor está estudiando en un instituto."],["fhij"]],
+[["trabaja","trabajan","trabajo","dedican","dedica"],"El mayor estudia en un instituto. En la casa trabajamos solo mi señora y yo.",["fhij"]],
+[["viven","vive","casa"],"Sí, los dos viven con nosotros; somos cuatro en la casa.",["hogar"]],
+[["como estan","como andan"],"Están bien, gracias por preguntar.",[]]
+],d:["De mis hijos no sabría decirle más, {t}.","Eso de mis hijos no se lo sabría decir."]},
+{w:/\bpadres\b/,r:[[["enferm","salud","murio","vive","viven","fallecio","infarto","presion","diabetes","hipertens","causa"],"Mi papá era hipertenso y murió de un infarto a los 63. Mi mamá tiene diabetes y vive.",["afam"]]],d:["De mis padres no sabría decirle más, {t}."]},
+{w:/\b(padre|papi)\b|\b(su|tu|el|de su|de tu) papa\b/,r:[[["enferm","salud","murio","fallecio","infarto","presion","hipertens","diabetes","edad","anos","vive","causa","corazon"],["Mi papá era hipertenso y murió de un infarto a los 63.","Mi papá era hipertenso. Murió de un infarto a los 63."],["afam"]]],d:["De mi papá no sabría decirle más, {t}."]},
+{w:/\b(madre|mama|mami)\b/,r:[[["enferm","salud","vive","diabetes","presion","azucar","corazon"],"Mi mamá tiene diabetes y vive.",["afam"]]],d:["De mi mamá no sabría decirle más, {t}."]},
+{w:/\b(hermano|hermana|hermanos|hermanas)\b/,r:[[["enferm","salud","presion","hipertens","diabetes","corazon"],"Un hermano mayor también es hipertenso.",["afam"]]],d:["De mi hermano no sabría decirle más, {t}."]}
+];
+FAM.forEach(function(f){f.r=f.r.map(function(r){return{k:r[0],a:r[1],u:r[2]}});f.dq={a:f.d,u:[]}});
+function famOf(seg){
+  var x=norm(seg),tk=x.split(/[^a-z0-9]+/);
+  for(var j=0;j<FAM.length;j++){var f=FAM[j];if(!f.w.test(x))continue;
+    var b=null,sc=0;f.r.forEach(function(r){var v=score(r,x,tk);if(v>sc){sc=v;b=r}});
+    if(!b&&f.r.length===1&&!x.replace(f.w,' ').split(/[^a-z0-9]+/).filter(function(w){return w&&'y su sus de el la tu que con en e'.split(' ').indexOf(w)<0}).length)b=f.r[0];
+    return b||f.dq}
+  return null;
+}
+var ACKW="ok okey ya bien perfecto entiendo entendido excelente claro listo vale muy bueno genial sigamos continuemos".split(" ");
+var ACKQ={a:["Ya.","Ajá.","Sí, dígame no más.","Ya, ¿qué más quiere saber?"],u:[]};
+function resolve(sg){var tw=norm(sg).split(/[^a-z0-9]+/).filter(Boolean);if(tw.length&&tw.every(function(w){return ACKW.indexOf(w)>-1}))return ACKQ;var f=famOf(sg);if(f)return f;var b=bestOf(sg);return b>-1?Q[b]:null}
+function split(t){
+  var segs=[],m=norm(t).match(/^[\s¡¿]*(hola|buenos dias|buenas tardes|buenas noches|buenas|saludos)[^,.!?;]*[,.!?;]?/);
+  if(m){segs.push(t.slice(0,m[0].length));t=t.slice(m[0].length)}
+  return segs.concat(t.split(/[?!.;\n¿¡]+/));
+}
+function ask(t,q0){
+  t=t.trim();if(!t)return;
+  say("n",t);if(conv)busy=true;
+  var qs=[];
+  if(q0)qs=[q0];
+  else split(t).forEach(function(sg){if(!sg.trim())return;var q=resolve(sg);if(q&&qs.indexOf(q)<0)qs.push(q)});
+  qs=qs.slice(0,3);
+  setTimeout(function(){
+    if(!qs.length){var nt=pick(NOPE).replace(/\{t\}/g,treat);say("p",nt);if(!speak(nt))resumeConv();return}
+    var out=[],fresh=[];
+    qs.forEach(function(q){
+      var a=pick(q.a,t);
+      if(asked.indexOf(q)>-1&&!q.h)a=pick(["Como le decía, ","Se lo repito: ","Ya le comenté, "])+a.charAt(0).toLowerCase()+a.slice(1);
+      out.push(a);asked.push(q);
+      q.u.forEach(function(id){if(opts.auto&&PERS.indexOf(id)<0&&open.indexOf(id)<0&&fresh.indexOf(id)<0)fresh.push(id)});
+      var i=Q.indexOf(q),bt=i>-1&&$("ideas").querySelector('[data-q="'+i+'"]');if(bt)bt.className="done";
+    });
+    var txt=out.join(" ").replace(/\{t\}/g,treat);say("p",txt);if(!speak(txt))resumeConv();
+    fresh.forEach(function(id){open.push(id)});
+    if(fresh.length)drawFicha(fresh);
+  },350);
+}
+/* voz: reconocimiento (alumno) y lectura en voz alta (don Jorge) con las voces del navegador */
+var SR=window.SpeechRecognition||window.webkitSpeechRecognition,rec=null,listening=false,failed=false;
+function vstat(t){$("vstat").textContent=t||""}
+var MALE=/lorenzo|jorge|pablo|raul|diego|alvaro|carlos|juan|enrique|miguel|tomas|andres|sergio|alonso|arnau|male|hombre/i;
+var FEM=/elvira|helena|laura|sabina|paloma|dalia|catalina|elena|salome|paola|ximena|marina|lucia|camila|valentina|andrea|maria|monica|sofia|renata|ramona|margarita|belen|karina|female|mujer/i;
+function esVoices(){return window.speechSynthesis?speechSynthesis.getVoices().filter(function(v){return(v.lang||"").toLowerCase().replace("_","-").indexOf("es")===0}):[]}
+function jorgeVoice(){
+  var pk=$("vsel").value,vs=esVoices(),best=null,sc=-99;
+  if(pk&&pk!=="auto")for(var i=0;i<vs.length;i++)if(vs[i].name===pk)return{v:vs[i],m:true};
+  vs.forEach(function(v){var l=v.lang.toLowerCase().replace("_","-"),
+    c=1+(l==="es-cl"?4:0)+(/^es-(us|mx|ar)$/.test(l)?1:0)+(MALE.test(v.name)?10:0)-(FEM.test(v.name)?20:0)-(/google/i.test(v.name)?8:0);
+    if(c>sc){sc=c;best=v}});
+  return best?{v:best,m:MALE.test(best.name)&&!FEM.test(best.name)}:null;
+}
+function whenVoices(cb){var n=0;(function t(){if(!window.speechSynthesis||speechSynthesis.getVoices().length||n++>25)cb();else setTimeout(t,120)})()}
+function fillVoices(){
+  var sel=$("vsel"),cur=sel.value;
+  sel.innerHTML='<option value="auto">Automática (masculina)</option>'+esVoices().map(function(v){return'<option value="'+esc(v.name)+'">'+esc(v.name.replace(/^Microsoft /,"")+" · "+v.lang)+"</option>"}).join("");
+  sel.value=[].some.call(sel.options,function(o){return o.value===cur})?cur:"auto";
+}
+if(window.speechSynthesis)speechSynthesis.onvoiceschanged=fillVoices;
+var sid=0;
+function speak(t){
+  if(!opts.voice||!window.speechSynthesis||!$("speak").checked)return false;
+  var id=++sid;speechSynthesis.cancel();
+  whenVoices(function(){if(id!==sid)return;
+    try{var u=new SpeechSynthesisUtterance(t),j=jorgeVoice();
+      u.lang=j?j.v.lang:"es-CL";if(j)u.voice=j.v;u.rate=.95;u.pitch=j&&j.m?1:.7;
+      u.onstart=function(){vstat("Don Jorge está hablando…")};
+      u.onend=u.onerror=function(){if(id!==sid)return;vstat("");resumeConv()};
+      speechSynthesis.speak(u)}catch(e){resumeConv()}});
+  return true;
+}
+$("vsel").addEventListener("change",function(){speak("Buenas tardes. Dígame Jorge no más.")});
+$("speak").addEventListener("change",function(){if(!this.checked&&window.speechSynthesis)speechSynthesis.cancel()});
+var conv=false,quiet=0,abortSend=false,busy=false,skip=0,lastN=0;
+function setMic(){var on=listening||conv;$("mic").classList.toggle("on",on);$("mic").setAttribute("aria-pressed",on?"true":"false")}
+/* conversación continua: el micrófono queda abierto toda la sesión (así el navegador pide permiso una sola vez);
+   mientras don Jorge habla, lo que se oye se descarta, y al terminar se vuelve a atender al alumno */
+function resumeConv(){if(!conv)return;setTimeout(function(){if(!conv)return;busy=false;skip=lastN;if(!listening)startListen();else vstat("Conversación continua: habla cuando quieras")},400)}
+function stopConv(){conv=false;busy=false;quiet=0;if(window.speechSynthesis){sid++;speechSynthesis.cancel()}if(rec&&listening){abortSend=true;rec.abort()}setMic();vstat("Conversación detenida.")}
+function startListen(){
+  if(!SR)return;
+  if(window.speechSynthesis&&!conv)speechSynthesis.cancel();
+  failed=false;abortSend=false;lastN=0;skip=0;rec=new SR();rec.lang="es-CL";rec.interimResults=true;rec.continuous=!!conv;
+  rec.onstart=function(){listening=true;setMic();if(!busy)vstat(conv?"Conversación continua: habla cuando quieras":"Escuchando… habla ahora")};
+  rec.onresult=function(e){var n=e.results.length,i,t="",fin=false;lastN=n;
+    if(conv){if(busy){skip=n;return}
+      for(i=skip;i<n;i++){t+=" "+e.results[i][0].transcript;if(e.results[i].isFinal)fin=true}
+      t=t.replace(/\s+/g," ").trim();$("qtext").value=t;
+      if(fin&&t){skip=n;quiet=0;$("qtext").value="";vstat("");ask(t,null)}
+      return}
+    for(i=0;i<n;i++)t+=e.results[i][0].transcript;$("qtext").value=t};
+  rec.onerror=function(e){if(e.error==="aborted")return;
+    if(e.error==="no-speech"&&conv){if(!busy){quiet++;if(quiet>=3){conv=false;vstat("Conversación detenida por silencio.")}}return}
+    failed=true;conv=false;
+    var m={"not-allowed":"El navegador no dio acceso al micrófono. Revisa el permiso del sitio o escribe tu pregunta.","service-not-allowed":"El navegador no permite usar el micrófono aquí. Escribe tu pregunta.","no-speech":"No te escuché. Intenta de nuevo.","audio-capture":"No encuentro un micrófono.","network":"No hay conexión con el servicio de voz."};
+    vstat(m[e.error]||"No pude usar la voz ("+e.error+"). Escribe tu pregunta.")};
+  rec.onend=function(){listening=false;setMic();
+    if(abortSend){abortSend=false;return}
+    if(failed)return;
+    if(conv){setTimeout(function(){if(conv&&!listening)startListen()},300);return}
+    var t=$("qtext").value.trim();if(t){quiet=0;vstat("");$("qtext").value="";ask(t,null)}};
+  try{rec.start()}catch(err){conv=false;setMic();vstat("No pude iniciar el micrófono. Escribe tu pregunta.")}
+}
+$("mic").addEventListener("click",function(){
+  if(conv){stopConv();return}
+  if(listening){rec.stop();return}
+  if(!SR)return;
+  if($("cont").checked){conv=true;quiet=0}
+  startListen();
+});
+$("gen").addEventListener("click",function(e){var g=e.target.getAttribute("data-g2");if(!g)return;treat=g==="m"?"señorita":"joven";$("v-gender").hidden=true;$("v-student").hidden=false;whenVoices(fillVoices);initStudent()});
+$("ask").addEventListener("submit",function(e){e.preventDefault();var t=$("qtext").value;$("qtext").value="";ask(t,null)});
+$("ideas").addEventListener("click",function(e){var i=e.target.getAttribute("data-q");if(i!==null)ask(Q[+i].q,Q[+i])});
+})();
+</script>
+</body>
+</html>
